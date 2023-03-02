@@ -42,7 +42,7 @@ namespace ConsolePain.WinAPI
 
         public void Set()
         {
-            Width = 1000;
+            Width = 960;
             Height = 520;    
             SetWindowPos(hWnd, IntPtr.Zero, 0, 0, Width, Height, 2);
         }

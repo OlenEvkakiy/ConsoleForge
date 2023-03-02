@@ -36,8 +36,11 @@ public class Program
 
         while (true)
         {
+            _WindowSize.Get();
             _MousePosition.GetPositionInScreen(out xInScreen, out yInScreen);
             _MousePosition.GetPositionInWindow(out xInWindow, out yInWindow);
+            int windowWidth = _WindowSize.Width;
+            int windowHeight = _WindowSize.Height;
             Thread.Sleep(100);
 
             if (_MouseClickTracking.LeftMouseButtonPressed())
@@ -45,12 +48,12 @@ public class Program
                 Console.WriteLine($"Позиция в окне по X: {xInWindow}, по Y: {yInWindow}");
             }
 
-            if (_MouseClickTracking.RightMouseButtonPressed())
-            {
-                //_MousePosition.MoveCursor(0, 0);
-                //_MouseClickTracking.ProgramPressLeftMouseButton();
-                Console.Clear();
-            }
+            //if (_MouseClickTracking.RightMouseButtonPressed())
+            //{
+            //    //_MousePosition.MoveCursor(0, 0);
+            //    //_MouseClickTracking.ProgramPressLeftMouseButton();
+            //    Console.Clear();
+            //}
 
             if (_MouseClickTracking.WheelButtonPressed())
             {
@@ -59,20 +62,19 @@ public class Program
                 consoleButton.PrintButton("Start", '-');
                 consoleButton.PrintButton("Help", '-');
                 consoleButton.PrintButton("Exit", '-');
-                Console.WriteLine(Console.BufferWidth);
-                Console.WriteLine(Console.BufferHeight);
+                Console.WriteLine($"Ширина в символах {Console.BufferWidth} Высота в символах {Console.BufferHeight}");
+                Console.WriteLine($"Ширина окна {windowWidth} Высота окна {windowHeight}");
                 foreach (var buttons in consoleButton.ConsoleButtonList)
                 {
-                    Console.WriteLine($"Ширина кнопки {buttons.Text} {buttons.Width}");
-                    Console.WriteLine($"Высота кнопки {buttons.Text} {buttons.Height}");
+                    Console.WriteLine($"Ширина кнопки {buttons.Text} {buttons.Width}px");
+                    Console.WriteLine($"Высота кнопки {buttons.Text} {buttons.Height}px");
                 }
             }
 
-            _WindowSize.Get();
-            if (_WindowSize.Width > 520 || _WindowSize.Height > 1000)
+            if (_WindowSize.Width > 520 || _WindowSize.Height > 960)
             {
                 _WindowSize.Set();
-                //Console.SetBufferSize(120, 26);
+                Console.SetBufferSize(115, 26);
             }
 
         }
@@ -89,7 +91,6 @@ public class ConsoleButton
         Text = text;
         Width = width;
         Height = height;
-
     }
 
     ConsoleSettings _ConsoleSettings = new ConsoleSettings();
