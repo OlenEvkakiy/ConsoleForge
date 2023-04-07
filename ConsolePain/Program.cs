@@ -1,5 +1,4 @@
 ﻿using ConsolePain.WinAPI;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.InteropServices;
@@ -44,20 +43,17 @@ public class Program
 
             if (_MouseClickTracking.LeftMouseButtonPressed())
             {
-                Console.WriteLine($"Позиция в окне по X: {xInWindow}, по Y: {yInWindow}");
-                if (xInWindow >= 0 && xInWindow <= consoleButton.Width && yInWindow >= 0 && yInWindow <= consoleButton.Height * consoleButton.ConsoleButtonList.Count)
-                {
-                    Console.WriteLine("Клик");
-                }
+                //Console.WriteLine($"Позиция в окне по X: {xInWindow}, по Y: {yInWindow}");
+                consoleButton.PressingButton();
+
             }
 
-            if (_MouseClickTracking.RightMouseButtonPressed())
-            {
-                consoleButton.PressingButton();
-                //_MousePosition.MoveCursor(0, 0);
-                //_MouseClickTracking.ProgramPressLeftMouseButton();
-                //Console.Clear();
-            }
+            //if (_MouseClickTracking.RightMouseButtonPressed())
+            //{
+            //    //_MousePosition.MoveCursor(0, 0);
+            //    //_MouseClickTracking.ProgramPressLeftMouseButton();
+            //    //Console.Clear();
+            //}
 
             if (_MouseClickTracking.WheelButtonPressed())
             {
@@ -67,13 +63,13 @@ public class Program
                 consoleButton.PrintButton("Help", '-');
                 consoleButton.PrintButton("Exit", '-');
 
-                Console.WriteLine($"Ширина в символах {Console.BufferWidth} Высота в символах {Console.BufferHeight}");
-                Console.WriteLine($"Ширина окна {windowWidth} Высота окна {windowHeight}");
-                foreach (var buttons in consoleButton.ConsoleButtonList)
-                {
-                    Console.WriteLine($"Ширина кнопки {buttons.Text} {buttons.Width}px");
-                    Console.WriteLine($"Высота кнопки {buttons.Text} {buttons.Height}px");
-                }
+                //Console.WriteLine($"Ширина в символах {Console.BufferWidth} Высота в символах {Console.BufferHeight}");
+                //Console.WriteLine($"Ширина окна {windowWidth} Высота окна {windowHeight}");
+                //foreach (var buttons in consoleButton.ConsoleButtonList)
+                //{
+                //    Console.WriteLine($"Ширина кнопки {buttons.Text} {buttons.Width}px");
+                //    Console.WriteLine($"Высота кнопки {buttons.Text} {buttons.Height}px");
+                //}
             }
 
             if (_WindowSize.Width > 520 || _WindowSize.Height > 960)
@@ -180,15 +176,17 @@ public class ConsoleButton
     }
 
 
-    //struct ButtonParam
-    //{
-    //    public string Text { get; set; }
-    //    public int Height { get; set; }
-    //    public int Width { get; set; }
-    //    public int Position { get; set; }
-    //    public int StartAreaY { get; set; }
-    //    public int EndAreaY { get; set; }
-    //}
+    class ButtonParam
+    {
+        public string Text { get; set; }
+        public int Height { get; set; }
+        public int Width { get; set; }
+        public int Position { get; set; }
+        public int StartAreaY { get; set; }
+        public int EndAreaY { get; set; }
+        public int StartAreaX { get; set; }
+        public int EndAreaX { get; set; }
+    }
 
     public void PressingButton()
     {
@@ -196,51 +194,58 @@ public class ConsoleButton
         int yInWindow = 0;
         int l = 0;
 
-        Dictionary<string, object> ButtonParams = new Dictionary<string, object>()
-        {
-            {"Text", "" },
-            {"Height", 0 },
-            {"Width", 0 },
-            {"Position", 0},
-            {"StartAreaY", 0},
-            {"EndAreaY", 0 }
-        };
-
         _MousePosition.GetPositionInWindow(out xInWindow, out yInWindow);
-        //ButtonParam buttonParams = new ButtonParam();
-        List<Dictionary<string, object>> buttons = new List<Dictionary<string, object>> ();
+        List<ButtonParam> buttons = new List<ButtonParam>();
+
         if (ConsoleButtonList.Count > 0)
         {
             for (int i = 0; i < ConsoleButtonList.Count; i++)
             {
                 var button = ConsoleButtonList[i];
-                ButtonParams["Text"] = button.Text;
-                ButtonParams["Height"] = button.Height;
-                ButtonParams["Width"] = button.Width;
-                ButtonParams["Position"] = i;
-                
-                buttons.Add(ButtonParams);
 
-                if ((int)ButtonParams["EndAreaY"] == 0)
+                ButtonParam buttonParam = new ButtonParam
                 {
-                    ButtonParams["EndAreaY"] = ButtonParams["Height"];
+                    Width = button.Width,
+                    Height = button.Height,
+                    Text = button.Text,
+                    Position = i,
+                    StartAreaY = 0,
+                    EndAreaY = button.Height,
+                    StartAreaX = 0,
+                    EndAreaX = button.Width
+
+                };
+
+
+                buttons.Add(buttonParam);
+
+                if (buttonParam.EndAreaY == 0)
+                {
+                    buttonParam.EndAreaY = buttonParam.Height;
                 }
 
                 for (int j = l; j < buttons.Count; j++)
                 {
                     var btn = buttons[j];
 
-                    if ((int)ButtonParams["Position"] != 0)
+                    if (buttonParam.Position != 0)
                     {
-                        buttons[j]["StartAreaY"] = (int)btn["Height"]+1;
+                        buttons[j].StartAreaY = (buttons[j - 1].Height + 1) * j;
+                        buttons[j].EndAreaY = buttons[j].StartAreaY + buttons[j].Height;
+                    }
+
+                    if (yInWindow >= buttons[j].StartAreaY && yInWindow <= buttons[j].EndAreaY &&
+                        xInWindow >= buttons[j].StartAreaX && xInWindow <= buttons[j].EndAreaX)
+                    {
+                        Console.WriteLine($"Клик на {buttons[j].Text}");
                     }
                 }
                 l++;
 
-                //if (xInWindow >= 0 && xInWindow <= width && yInWindow >= 0 && yInWindow <= height * 3)
-                //{
-                //    Console.WriteLine($"Клик {button.Text}");
-                //}
+                for (int j = 0; j < buttons.Count; j++)
+                {
+
+                }
             }
         }
     }
