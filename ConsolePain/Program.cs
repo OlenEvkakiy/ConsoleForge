@@ -39,30 +39,30 @@ public class Program
             int windowHeight = _WindowSize.Height;
             Thread.Sleep(100);
 
-            if (_MouseClickTracking.LeftMouseButtonPressed())
+            if (_MouseClickTracking.LeftMouseButtonPressed() && xInWindow > 0 && yInWindow > 0)
             {
                 Console.ForegroundColor = ConsoleColor.White;
                 consoleButton.PressingButton();
-                //Console.WriteLine($"Позиция в окне по X: {xInWindow}, по Y: {yInWindow}");
+                Console.WriteLine($"Позиция в окне по X: {xInWindow}, по Y: {yInWindow}");
             }
 
             if (_MouseClickTracking.RightMouseButtonPressed())
             {
-                //consoleButton.PressingButton();
+                consoleButton.PressingButton();
                 //if (consoleButton.ButtonPressed)
                 //{
                 //    Console.WriteLine($"Клик {consoleButton.Text}");
                 //}
-                //_MousePosition.MoveCursor(0, 0);
+                _MousePosition.MoveCursor(0, 0);
                 //_MouseClickTracking.ProgramPressLeftMouseButton();
-                //Console.Clear();
+                Console.Clear();
             }
 
             if (_MouseClickTracking.WheelButtonPressed())
             {
                 Console.Clear();
                 consoleButton.ConsoleButtonList.Clear();
-                consoleButton.PrintButton("Start", '-', ConsoleColor.Green);
+                consoleButton.PrintButton("Start", '/', ConsoleColor.Green);
                 consoleButton.PrintButton("Help", '-', ConsoleColor.White);
                 consoleButton.PrintButton("Exit", '*', ConsoleColor.Red);
 
@@ -224,7 +224,7 @@ public class ConsoleButton
                         xInWindow >= ButtonsParamsList[j].StartAreaX && xInWindow <= ButtonsParamsList[j].EndAreaX)
                     {
                         Console.WriteLine($"Клик на {ButtonsParamsList[j].Text}");
-                        ChangingButtonAppearance(buttonParam.Position);
+                        //ChangingButtonAppearance(buttonParam.Position);
                         ButtonPressed = true;
                     }
                 }
