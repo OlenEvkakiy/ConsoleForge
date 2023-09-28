@@ -19,7 +19,7 @@ public class Program
         WindowSize _WindowSize = new WindowSize();
         MousePosition _MousePosition = new MousePosition();
         MouseClickTracking _MouseClickTracking = new MouseClickTracking();
-        ConsoleButton consoleButton = new ConsoleButton(0, 0, "", 0, 0, 0, 0, false, ' ');
+        ConsoleButton consoleButton = new ConsoleButton(0, 0, "", 0, 0, 0, 0, false, ' ', 0);
 
         _WindowSize.DisableWindowResizing(true);
 
@@ -43,7 +43,7 @@ public class Program
             {
                 Console.ForegroundColor = ConsoleColor.White;
                 consoleButton.PressingButton();
-                Console.WriteLine($"Позиция в окне по X: {xInWindow}, по Y: {yInWindow}");
+                //Console.WriteLine($"Позиция в окне по X: {xInWindow}, по Y: {yInWindow}");
             }
 
             if (_MouseClickTracking.RightMouseButtonPressed())
@@ -62,9 +62,9 @@ public class Program
             {
                 Console.Clear();
                 consoleButton.ConsoleButtonList.Clear();
-                consoleButton.PrintButton("Start", '/', ConsoleColor.Green);
-                consoleButton.PrintButton("Help", '-', ConsoleColor.White);
-                consoleButton.PrintButton("Exit", '*', ConsoleColor.Red);
+                consoleButton.CreateButton("Start", '/', ConsoleColor.Green);
+                consoleButton.CreateButton("Help", '-', ConsoleColor.White);
+                consoleButton.CreateButton("Exit", '*', ConsoleColor.Red);
 
 
                 //Console.WriteLine($"Ширина в символах {Console.BufferWidth} Высота в символах {Console.BufferHeight}");
@@ -85,13 +85,14 @@ public class Program
     }
 }
 
-
 public class ButtonParam
 {
     public string Text { get; set; }
-    public int Height { get; set; }
-    public int Width { get; set; }
-    public int Position { get; set; }
+
+    public int NumberOfSymbols { get; set; }
+    public int HeightPx { get; set; }
+    public int WidthPx { get; set; }
+    public int PositionInLayer { get; set; }
     public int StartAreaY { get; set; }
     public int EndAreaY { get; set; }
     public int StartAreaX { get; set; }
@@ -100,17 +101,18 @@ public class ButtonParam
 
 public class ConsoleButton
 {
-    public ConsoleButton(int posX, int posY, string text, int width, int height, int fontWidth, int fontHeight, bool buttonPressed, char symbolForBorders)
+    public ConsoleButton(int posX, int posY, string text, int width, int height, int fontWidth, int fontHeight, bool buttonPressed, char symbolForBorders, int numberOfSymbols)
     {
         PosX = posX;
         PosY = posY;
         Text = text;
-        Width = width;
-        Height = height;
+        WidthPx = width;
+        HeightPx = height;
         FontWidth = fontWidth;
         FontHeight = fontHeight;
         ButtonPressed = buttonPressed;
         SymbolForBorders = symbolForBorders;
+        NumberOfSymbols = numberOfSymbols;
     }
 
 
@@ -122,20 +124,23 @@ public class ConsoleButton
 
 
     public ButtonParam ButtonParam { get; set; }
-    public int PosX { get; private set; }
-    public int PosY { get; private set; }
+    
     public string Text { get; set; }
     public char SymbolForBorders { get; private set; }
-    public int Width { get; private set; }
-    public int Height { get; private set; }
+
+    public int WidthPx { get; private set; }
+    public int HeightPx { get; private set; }
     public int FontWidth { get; private set; }
     public int FontHeight { get; private set; }
+    public int PosX { get; private set; }
+    public int PosY { get; private set; }
+    public int NumberOfSymbols { get; private set; } //количество букв в кнопке(слове)
+
     public bool ButtonPressed;
 
     private char[] _symbols;
     private int _fontHeight;
     private int _fontWidth;
-    private int _numberOfSymbols;
     private int _numberOfLines = 3;
 
 
@@ -149,7 +154,7 @@ public class ConsoleButton
         }
     }
 
-    public void PrintButton(string text, char symbolForBorders, ConsoleColor color)
+    public void CreateButton(string text, char symbolForBorders, ConsoleColor color)
     {
         Console.ForegroundColor = color;
         SymbolForBorders = symbolForBorders;
@@ -161,19 +166,19 @@ public class ConsoleButton
         Text = text;
         ButtonSize();
         ButtonPosition();
-        ConsoleButtonList.Add(new ConsoleButton(PosX, PosY, Text, Width, Height, FontWidth, FontHeight, ButtonPressed, SymbolForBorders));
     }
 
     private void ButtonSize()
     {
         _ConsoleSettings.GetConsoleFontSize(out _fontHeight, out _fontWidth);
         _symbols = Text.ToCharArray();
-        _numberOfSymbols = _symbols.Length;
         _numberOfLines = 3;
-        Width = (_numberOfSymbols + 2) * _fontWidth;
-        Height = _numberOfLines * _fontHeight;
+        NumberOfSymbols = _symbols.Length;
+        WidthPx = (NumberOfSymbols + 2) * _fontWidth;
+        HeightPx = _numberOfLines * _fontHeight;
         FontWidth = _fontWidth;
         FontHeight = _fontHeight;
+        ConsoleButtonList.Add(new ConsoleButton(PosX, PosY, Text, WidthPx, HeightPx, FontWidth, FontHeight, ButtonPressed, SymbolForBorders, NumberOfSymbols));
     }
 
     public void PressingButton()
@@ -192,14 +197,15 @@ public class ConsoleButton
 
                 ButtonParam buttonParam = new ButtonParam
                 {
-                    Width = button.Width,
-                    Height = button.Height,
+                    WidthPx = button.WidthPx,
+                    HeightPx = button.HeightPx,
                     Text = button.Text,
-                    Position = i,
+                    PositionInLayer = i,
                     StartAreaY = 0,
-                    EndAreaY = button.Height,
+                    EndAreaY = button.HeightPx,
                     StartAreaX = 0,
-                    EndAreaX = button.Width
+                    EndAreaX = button.WidthPx,
+                    NumberOfSymbols = button.NumberOfSymbols                    
                 };
 
 
@@ -207,24 +213,25 @@ public class ConsoleButton
 
                 if (buttonParam.EndAreaY == 0)
                 {
-                    buttonParam.EndAreaY = buttonParam.Height;
+                    buttonParam.EndAreaY = buttonParam.HeightPx;
                 }
 
                 for (int j = l; j < ButtonsParamsList.Count; j++)
                 {
                     var btn = ButtonsParamsList[j];
 
-                    if (buttonParam.Position != 0)
+                    if (buttonParam.PositionInLayer != 0)
                     {
-                        ButtonsParamsList[j].StartAreaY = (ButtonsParamsList[j - 1].Height + 1) * j;
-                        ButtonsParamsList[j].EndAreaY = ButtonsParamsList[j].StartAreaY + ButtonsParamsList[j].Height;
+                        ButtonsParamsList[j].StartAreaY = (ButtonsParamsList[j - 1].HeightPx + 1) * j;
+                        ButtonsParamsList[j].EndAreaY = ButtonsParamsList[j].StartAreaY + ButtonsParamsList[j].HeightPx;
                     }
 
                     if (yInWindow >= ButtonsParamsList[j].StartAreaY && yInWindow <= ButtonsParamsList[j].EndAreaY &&
                         xInWindow >= ButtonsParamsList[j].StartAreaX && xInWindow <= ButtonsParamsList[j].EndAreaX)
                     {
                         Console.WriteLine($"Клик на {ButtonsParamsList[j].Text}");
-                        //ChangingButtonAppearance(buttonParam.Position);
+
+                       // ChangingButtonAppearance(ButtonsParamsList[j].NumberOfSymbols);
                         ButtonPressed = true;
                     }
                 }
@@ -235,14 +242,22 @@ public class ConsoleButton
         ButtonPressed = false;
     }   
      
-    public void ChangingButtonAppearance(int position)
+    public void ChangingButtonAppearance(int numberOfSymbols)
     {
-        int row;
-        int column;
-        var pos = position;
+        int row = 0; //строка;
+        int column = 0; //столбец;     
+        int num = ButtonsParamsList.Count * 3;
 
-        Console.SetCursorPosition(2, 0);
-        Console.WriteLine("i");
+        Console.WriteLine(numberOfSymbols);
+        for (int i = 0; i <= numberOfSymbols+1; i++)
+        {
+            Console.SetCursorPosition(column, row);
+            Console.Write("*");
+            column++;
+            Console.SetCursorPosition(0, num);
+        }
+
+
     }
 
     private void ButtonPosition()
